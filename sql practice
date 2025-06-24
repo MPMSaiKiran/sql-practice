@@ -193,3 +193,82 @@ SELECT Name, Population
 FROM Country
 WHERE Continent = 'Asia' AND Population > 500000000;
 
+with cte_pop as(select name,population
+from country
+where population>1000000)
+select *
+from cte_pop
+order by population desc;
+
+with cte_are as(select name, surfacearea as area
+from country
+order by SurfaceArea desc
+limit 5)
+select *
+from cte_are;
+
+with cte_dens as( select name,population,surfacearea,population/surfacearea as density
+from country
+order by density desc)
+select *
+from cte_dens
+
+with cte_dens as(select name,population,surfacearea,population/surfacearea as density
+from country),
+avg_dens as(select avg(density) as avgdens
+from cte_dens)
+select p.name,p.density
+from cte_dens p,avg_dens a
+where p.density>a.avgdens;
+
+with cte_gdp as(select name,continent,gnp,rank() over (partition by continent order by gnp desc) as rnk
+from country
+where gnp is not null
+)
+select *
+from cte_gdp
+where rnk=1;
+
+with cte_count as(select continent,count(*) as conunt
+from country
+group by Continent)
+select *
+from cte_count;
+
+with most_pop as (select name,Population
+from country
+order by Population desc
+limit 3
+)
+select *
+from most_pop;
+
+explain SELECT Name, Population
+FROM Country
+WHERE Continent = 'Asia' AND Population > 500000000;
+
+CREATE INDEX continent_population ON Country(Continent, Population);
+explain
+SELECT Name, Population
+FROM Country
+WHERE Continent = 'Asia' AND Population > 500000000;
+
+drop index continent_population on country;
+
+drop index areapopu on country;
+
+EXPLAIN SELECT Name, Population
+FROM Country
+WHERE Continent = 'Asia' AND Population > 500000000;
+
+show index from country;
+
+CREATE INDEX areapopu1 ON country(surfacearea, population);
+EXPLAIN ANALYZE SELECT name, population, surfacearea
+FROM country
+WHERE SurfaceArea >= 3000000 OR population >= 25000000;
+
+select continent,count(name)
+from country
+group by 1
+order by 1;
