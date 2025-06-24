@@ -1,0 +1,195 @@
+select Name
+from country
+where Continent='Asia';
+
+select Name ,population
+from country
+order by Population desc
+limit 10;
+
+select name
+from city
+where CountryCode='IND';
+
+select Name,LifeExpectancy
+from country
+where LifeExpectancy>75;
+
+select Name ,Population
+from country
+where population>1000000;
+
+select distinct country.Name
+from country
+inner join countrylanguage on country.Code=countrylanguage.CountryCode
+where language='English'and IsOfficial='T';
+
+select CountryCode, count(CountryCode) as sum
+from city
+group by 1;
+
+select Code,avg(population) as avg_pop
+from country
+group by 1;
+
+select *
+from world;
+
+
+
+SELECT *, 
+       ROW_NUMBER() OVER (ORDER BY Population desc) AS 'row'
+FROM City;
+
+
+select countrycode,count(*),
+rank() over (order by count(district) desc) as 'count'
+from city
+group by countrycode;
+
+
+select 	count(id)
+from city
+where countrycode = 'IND';
+
+select countrycode,rank() over (order by sum(population) desc) as 'rank', sum(Population) as total_pop
+from city 
+group by countrycode;
+
+
+select rank() over (partition by countrycode order by population desc) as 'rank',countrycode, population
+from city;
+
+select *
+from(
+select 
+rank() over (partition by countrycode order by population desc) as city_rank,
+countrycode,
+population
+from city) as ranked
+where city_rank = 1;
+
+select countrycode, count(district) as count
+from city
+group by countrycode
+order by count desc;
+
+select name,countrycode,population,
+ntile(5) over (order by population desc) as pop_band
+from city;
+
+select *
+from (select name,countrycode,population,
+rank() over (partition by countrycode order by population desc) as rnk
+from city) as ranked
+where rnk<=2;
+
+select name,countrycode,population,
+ntile(4) over (order by population desc) as qutars
+from city;
+
+select name,countrycode,population,
+lag(population) over (order by population desc) as lagg
+from city;
+
+select name,countrycode,population,
+lag(population) over (order by population desc) as lagg,
+population - lag(population) over (order by population desc) as diff
+from city;
+
+select name,district,population,countrycode,
+row_number() over (partition by countrycode order by population desc)
+from city;
+
+select name,district,population,countrycode,
+lag(population) over (partition by countrycode order by population desc) as lagg
+from city;
+
+SELECT 
+  Name, CountryCode, Population,
+  SUM(Population) OVER (PARTITION BY CountryCode) AS total_country_pop
+FROM City;
+
+SELECT 
+  Name, CountryCode, Population,
+  SUM(Population) OVER (PARTITION BY CountryCode ORDER BY Population DESC) AS running_total
+FROM City;
+
+select sum(population)
+from city;
+
+with big_citys as(select name, countrycode,population
+from city
+where Population >5000000)
+select * 
+from big_citys
+order by Population desc;
+
+SELECT CountryCode, SUM(Population) AS total_pop
+    FROM City
+    GROUP BY CountryCode;
+
+select a.name as city1,
+		b.name as city2,
+        a.countrycode
+from city a
+join city b on a.countrycode=b.countrycode
+where a.id<b.id;
+
+SELECT 
+    a.Name AS city1,
+    b.Name AS city2,
+    a.population
+
+    from city a
+    join city b on a.population=b.population
+    where a.id<b.id;
+    
+with top as
+(select name,population
+from city order by population desc
+limit 5)
+select * from top
+
+with avag as (select avg(population) as avgpop
+from city)
+select name,population
+from city,avag
+where city.population >avag.avgpop;
+
+with sqft as (select name,surfacearea
+from country
+where surfacearea>1000000)
+select name,surfacearea
+from sqft;
+
+with ind as(select district
+from city
+where countrycode='IND')
+select district
+from ind;
+
+DROP INDEX poparea ON country;
+create index poparea on country(surfacearea,population);
+SELECT name, population, SurfaceArea
+FROM country
+WHERE surfacearea >= 3000000 OR population >= 25000000;
+explain SELECT name, population
+FROM country
+WHERE surfacearea >= 3000000 OR population >= 25000000;
+
+-- Step 1: Create an index to improve performance
+CREATE INDEX idx_continent_population 
+ON Country(Continent, Population);
+
+-- Step 2: Run the actual query
+SELECT Name, Population
+FROM Country
+WHERE Continent = 'Asia' AND Population > 500000000;
+
+-- Step 3: Analyze the query using EXPLAIN
+EXPLAIN
+SELECT Name, Population
+FROM Country
+WHERE Continent = 'Asia' AND Population > 500000000;
+
